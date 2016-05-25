@@ -31,8 +31,8 @@
       ])
 
       function labeling( index ){
-        $("#target-img").attr( "src" ,"http://140.119.164.249/test/modelslist2/" + targetlist.targetname[index] + ".PNG" );
-        $("#target-link").attr( "href" ,"http://140.119.164.249/test/modelslist2/viewmodel.php?file=" + targetlist.targetname[index] + ".stl" );
+        $("#target-img").attr( "src" ,"http://140.119.164.249/test/ml20160525/" + targetlist.targetname[index] + ".PNG" );
+        $("#target-link").attr( "href" ,"http://140.119.164.249/test/ml20160525/viewmodel.php?file=" + targetlist.targetname[index] + ".stl" );
         $("#model").val(targetlist.targetname[index]);
       }
 
@@ -48,7 +48,7 @@
 
       $(function() {
 
-        alert("已啟用快速功能，方向左鍵是圈，方向右鍵是叉");
+        alert("已啟用快速功能，方向左鍵是劣，方向下鍵是普通，方向右鍵是優");
 
         $("#next").click(function() {
           current++;
@@ -66,7 +66,7 @@
             alert("請先填寫姓名");
           }
           else{
-            $("#ans").val("O");
+            $("#ans").val("2");
             $("#next").click();
           }
         });
@@ -77,7 +77,18 @@
             return;
           }
           else {
-            $("#ans").val("X");
+            $("#ans").val("0");
+            $("#next").click();
+          }
+        });
+
+       $("#ans-D").click(function() {
+          if($("#name").val()==""){
+            alert("請先填寫姓名");
+            return;
+          }
+          else {
+            $("#ans").val("1");
             $("#next").click();
           }
         });
@@ -85,17 +96,20 @@
         $(document).keydown(function(e) {
             switch(e.which) {
                 case 37: // left
-                $("#ans-O").click();
+//                $("#ans-O").click();
+                $("#ans-X").click();
                 break;
 
                 case 38: // up
                 break;
 
                 case 39: // right
-                $("#ans-X").click();
+//                $("#ans-X").click();
+                $("#ans-O").click();
                 break;
 
                 case 40: // down
+                $("#ans-D").click();
                 break;
 
                 default: return; // exit this handler for other keys
