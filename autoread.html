@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>AutoRead</title>
+    <script src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="js/async.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" crossorigin="anonymous">
+    <style media="screen">
+      button {
+        margin: 0px 20px;
+        padding: 10px 60px !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="text-center">
+      <h1 id="progress"></h1>
+    </div>
+    <div style="padding:10px 25%" class="text-center">
+      <img id="target-img" height="200px" src="" alt="" />
+    </div>
+    <div class="text-center" id="form">
+      <script type="text/javascript">var submitted=false;</script>
+    	<iframe name="hidden_iframe" id="hidden_iframe"
+    	style="display:none;" onload="if(submitted){}"></iframe>
+      <form id="gForm" class="" action="" method="post" target="hidden_iframe" onsubmit="submitted=true;">
+        <label for="name" style="font-size:24px">姓名：</label>
+        <input type="text" name="" value="" id="testerName" style="font-size:24px">
+        <input type="text" name="" value="" id="fileName" class="hidden">
+        <input type="text" name="" value="" id="rating" class="hidden">
+        <div class="text-center" style="padding:10px" id="btns">
+        </div>
+        <button type="submit" name="button" id="next" class="hidden">Next</button>
+      </form>
+    </div>
+  </body>
+  <script type="text/javascript">
+    var config;
+    var current = 0;
+
+    async.series([
+      loadConfig,
+      initialApp
+    ]);
+
+    function loadConfig(callback){
+      $.getJSON( "config.json",
+          function (data) {
+            config = data;
+            callback(null);
+      });
+    }
+
+    function initialApp(){
+      updateProgress( current, config.fileList.length );
+      labeling( current, config.fileList );
+      $("#gForm").attr("action",config.googleForm.url.replace("viewform","formResponse"));
+      $("#testerName").attr("name",config.fields.testerName);
+      $("#fileName").attr("name",config.fields.fileName);
+      $("#rating").attr("name",config.fields.rating);
+
+      // Add btns
+      config.label.forEach(function ( l, i ) {
+        $("#btns").append('<button type="button" name="button" class="btn btn-lg btn-primary" id="ans-' + i + '">' + l + '</button>');
+        $("#ans-" + i).click(function() {
+          if($("#testerName").val()==""){
+            alert("請先填寫姓名");
+          }
+          else{
+            $("#rating").val(i+1);
+            $("#next").click();
+            nextTarget();
+          }
+        });
+      });
+    }
+
+    function labeling( index, fileList ){
+      $("#target-img").attr( "src" ,"file/" + fileList[index] );
+      $("#fileName").val(fileList[index]);
+    }
+
+    function updateProgress( now, total ){
+      $("#progress").html(now+1 + " / " + total);
+    }
+
+    function nextTarget(){
+      current++;
+      if(current>=config.fileList.length) {
+        alert("已經全部標記完畢");
+      }
+      else {
+        updateProgress( current, config.fileList.length );
+        labeling( current, config.fileList );
+      }
+    }
+  </script>
+</html>

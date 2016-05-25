@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Label Sample</title>
+    <script src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="async.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" crossorigin="anonymous">
+    <style media="screen">
+      button {
+        margin: 0px 20px;
+        padding: 10px 60px !important;
+      }
+    </style>
+    <script type="text/javascript">
+      var targetlist;
+      var current = 0;
+      async.waterfall([
+        function(callback){
+          $.getJSON( "data.json", function( data ) {
+            targetlist = data;
+            callback(null);
+          });
+        },
+        function(callback){
+          updateProgress(current,targetlist.targetname.length);
+          labeling(current);
+          callback(null);
+        }
+      ])
+
+      function labeling( index ){
+        $("#target-img").attr( "src" ,"http://140.119.164.249/test/modelslist2/" + targetlist.targetname[index] + ".PNG" );
+        $("#target-link").attr( "href" ,"http://140.119.164.249/test/modelslist2/viewmodel.php?file=" + targetlist.targetname[index] + ".stl" );
+        $("#model").val(targetlist.targetname[index]);
+      }
+
+      function updateProgress( now, total ){
+        $("#progress").html(now+1 + " / " + total);
+      }
+
+      function nextTarget(){
+        current++;
+        updateProgress(current,targetlist.targetname.length);
+        labeling(current);
+      }
+
+      $(function() {
+
+        alert("已啟用快速功能，方向左鍵是圈，方向右鍵是叉");
+
+        $("#next").click(function() {
+          current++;
+          if(current>=targetlist.targetname.length) {
+            alert("已經全部標記完畢");
+          }
+          else {
+            updateProgress(current,targetlist.targetname.length);
+            labeling(current);
+          }
+        })
+
+        $("#ans-O").click(function() {
+          if($("#name").val()==""){
+            alert("請先填寫姓名");
+          }
+          else{
+            $("#ans").val("O");
+            $("#next").click();
+          }
+        });
+
+        $("#ans-X").click(function() {
+          if($("#name").val()==""){
+            alert("請先填寫姓名");
+            return;
+          }
+          else {
+            $("#ans").val("X");
+            $("#next").click();
+          }
+        });
+
+        $(document).keydown(function(e) {
+            switch(e.which) {
+                case 37: // left
+                $("#ans-O").click();
+                break;
+
+                case 38: // up
+                break;
+
+                case 39: // right
+                $("#ans-X").click();
+                break;
+
+                case 40: // down
+                break;
+
+                default: return; // exit this handler for other keys
+            }bl
+            e.preventDefault(); // prevent the default action (scroll / move caret)
+        });
+      });
+
+
+    </script>
+  </head>
+  <body>
+    <div class="text-center">
+      <h1 id="progress"></h1>
+    </div>
+    <div style="padding:10px 25%">
+      <a id="target-link" href="" target="_blank">
+        <img id="target-img" width="100%" src="" alt="" />
+      </a>
+    </div>
+    <div class="text-center" id="form">
+      <script type="text/javascript">var submitted=false;</script>
+    	<iframe name="hidden_iframe" id="hidden_iframe"
+    	style="display:none;" onload="if(submitted){}"></iframe>
+      <form class="" action="https://docs.google.com/forms/d/1P99J9KUX6noQqzwkZjcVnQAIAtLbsOtywdc-MfMJwMk/formResponse" method="post" target="hidden_iframe" onsubmit="submitted=true;">
+        <label for="name" style="font-size:24px">姓名：</label>
+        <input type="text" name="entry.1767848753" value="" id="name" style="font-size:24px">
+        <input type="text" name="entry.984658840" value="" id="model" class="hidden">
+        <input type="text" name="entry.132459143" value="" id="ans" class="hidden">
+        <div class="text-center" style="padding:10px">
+          <button type="button" name="button" class="btn btn-lg btn-success" id="ans-O">O</button>
+          <button type="button" name="button" class="btn btn-lg btn-danger" id="ans-X">X</button>
+        </div>
+        <button type="submit" name="button" id="next" class="hidden">Next</button>
+      </form>
+    </div>
+  </body>
+</html>
