@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.js"></script>
+    <script type="text/javascript" src="js/STLLoader.js"></script>
+    <script type="text/javascript" src="js/Detector.js"></script>
+    <script type="text/javascript" src="js/OrbitControls.js"></script>
+  </head>
+  <body>
+    <script>
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+			var container, stats;
+			var camera, cameraTarget, scene, renderer;
+			init();
+			function init() {
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 15 );
+				camera.position.set( 3, 0.15, 3 );
+				cameraTarget = new THREE.Vector3( 0, -0.25, 0 );
+				scene = new THREE.Scene();
+
+        // Lights
+				scene.add( new THREE.HemisphereLight( 0x443333, 0x111122 ) );
+				addShadowedLight( 0.5, 1, -1, 0xffff99, 1 );
+
+				var loader = new THREE.STLLoader();
+				var material = new THREE.MeshPhongMaterial( { color: 0xAAAAAA, specular: 0x111111, shininess: 200 } );
+				loader.load( 'file/test.stl', function ( geometry ) {
+					var meshMaterial = material;
+					if (geometry.hasColors) {
+						meshMaterial = new THREE.MeshPhongMaterial({ opacity: geometry.alpha, vertexColors: THREE.VertexColors });
+					}
+					var mesh = new THREE.Mesh( geometry, meshMaterial );
+					mesh.position.set( 0, 0, 0 );
+					// mesh.rotation.set( - Math.PI / 2, Math.PI / 2, 0 );
+					mesh.scale.set( 0.3, 0.3, 0.3 );
+					scene.add( mesh );
+          render();
+				} );
+
+				// renderer
+				renderer = new THREE.WebGLRenderer( { antialias: true, autoClearDepth: false } );
+        renderer.setClearColor( 0x999999 );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+        var controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', render );
+				controls.target.set( 0, 1.2, 2 );
+				controls.update();
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+        render();
+			}
+			function addShadowedLight( x, y, z, color, intensity ) {
+				var directionalLight = new THREE.DirectionalLight( color, intensity );
+				directionalLight.position.set( x, y, z );
+				scene.add( directionalLight );
+				directionalLight.castShadow = true;
+				directionalLight.shadowCameraVisible = true;
+				var d = 1;
+				directionalLight.shadowCameraLeft = -d;
+				directionalLight.shadowCameraRight = d;
+				directionalLight.shadowCameraTop = d;
+				directionalLight.shadowCameraBottom = -d;
+				directionalLight.shadowCameraNear = 1;
+				directionalLight.shadowCameraFar = 4;
+				directionalLight.shadowMapWidth = 1024;
+				directionalLight.shadowMapHeight = 1024;
+				directionalLight.shadowBias = -0.005;
+			}
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+				// stats.update();
+			}
+			function render() {
+				// var timer = Date.now() * 0.0005;
+				// camera.position.x = Math.cos( timer ) * 3;
+				// camera.position.z = Math.sin( timer ) * 3;
+				// camera.lookAt( cameraTarget );
+				renderer.render( scene, camera );
+			}
+		</script>
+    <div class="" id="form">
+      <script type="text/javascript">var submitted=false;</script>
+    	<iframe name="hidden_iframe" id="hidden_iframe"
+    	style="display:none;" onload="if(submitted){alert('提交完成');}"></iframe>
+      <form class="" action="https://docs.google.com/forms/d/1gxPANino43YoVEJgxAzVDT05QktLuU0WAyW4sdsLvao/formResponse" method="post" target="hidden_iframe" onsubmit="submitted=true;">
+        <input type="text" name="entry.1402845781" value="">
+        <input type="text" name="entry.1121021702" value="">
+        <input type="text" name="entry.1860615056" value="">
+        <input type="submit" name="name" value="submit">
+      </form>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>BuildConfig</title>
+    <script src="js/async.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <form>
+          <div class="form-group">
+            <label for="formurl">Google Form URL</label>
+            <input class="form-control" type="text" id="formurl" value="https://docs.google.com/forms/d/1pg1ZNUoc-P4ReL6m_sJ8wM7Dgoz-O1v7E4lBmzUPc1E/viewform">
+            <button class="btn btn-default" type="button" id="parse" name="button">Parse</button>
+          </div>
+          <div class="form-group">
+            <label for="filelist">Target Files</label>
+            <input type="file" id="files" value="" multiple="multiple">
+          </div>
+        </form>
+        <div id="fieldsSetting">
+          <div class="form-group">
+            <label for="fileNameSel">File Name Field</label>
+            <select id="fileNameSel" class="formSel form-control" name="">
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="testerNameSel">Tester Name Field</label>
+            <select id="testerNameSel" class="formSel form-control" name="">
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ratingSel">Rating Field</label>
+            <select id="ratingSel" class="formSel form-control" name="">
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="numCat">Number of Category</label>
+            <input id="numCat" class="form-control" type="text" value="2">
+          </div>
+          <div class="form-group">
+            <table id="opTable" class="table table-bordered">
+              <tr id="tb-val">
+                <td>Value</td>
+                <td>1</td>
+                <td>2</td>
+              </tr>
+              <tr id="tb-label">
+                <td>Label</td>
+                <td><input type="text" class="form-control" value="1"></td>
+                <td><input type="text" class="form-control" value="2"></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <button class="btn btn-default" id="download" type="button" name="button">Download Config</button>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript">
+    var config = {};
+    $("#parse").click(parseClick);
+    $("#download").click(downLoadClick);
+
+    $("#numCat").change(function(){
+      if( isNaN($("#numCat").val()) ){
+        alert("Number of Category must be number.");
+      }
+      else if( $("#numCat").val() > 9 || $("#numCat").val() < 2 ){
+        alert("Number of Category must between 2 to 9.");
+      }
+      else{
+        $("#tb-val").html("<td>Value</td>");
+        $("#tb-label").html("<td>Label</td>");
+        for (var i = 0; i < $("#numCat").val(); i++) {
+          $("#tb-val").append("<td>" + (i+1) + "</td>");
+        }
+        for (var i = 0; i < $("#numCat").val(); i++) {
+          $("#tb-label").append("<td><input type='text' class='form-control' value=" + (i+1) + "></td>");
+        }
+      }
+    });
+
+    function downLoadClick() {
+
+      // Get fields setting ,category number setting and file list
+      config.fields.fileName = $("#fileNameSel").val()
+      config.fields.testerName = $("#testerNameSel").val()
+      config.fields.rating = $("#ratingSel").val()
+
+      var ratingLabel = $("#tb-label input");
+      for (var i = 0; i < ratingLabel.length; i++) {
+        config.label.push( $(ratingLabel[i]).val() );
+      }
+
+      var files = $('#files').prop("files");
+      var fileList = $.map(files, function(val) { return val.name; });
+      config.fileList = fileList;
+
+      // Build configJSON
+      var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config));
+      var a = document.createElement('a');
+      a.display = 'none';
+      a.href = 'data:' + data;
+      a.download = 'config.json';
+
+      a.click();
+    }
+
+    function parseClick(){
+      var formHTML;
+
+      async.series([
+        configInit,
+        getFormHTML,
+        parseGoogelForm,
+        setFiledOptions
+      ]);
+
+      function configInit(callback) {
+        var url = $('#formurl').val();
+        config = {
+          "googleForm": {
+            "url": url,
+            "fields": []
+          },
+          "targetName": null,
+          "fields": { "fileName":null, "testerName":null, "rating":null},
+          "label": []
+        };
+        callback(null);
+      }
+
+      function getFormHTML(callback) {
+        $.ajaxSetup({
+            scriptCharset: "utf-8", //or "ISO-8859-1"
+            contentType: "application/json; charset=utf-8"
+        });
+        $.getJSON('http://whateverorigin.org/get?url=' +
+            encodeURIComponent(config.googleForm.url) + '&callback=?',
+            function (data) {
+              formHTML = data.contents;
+              callback(null);
+        });
+      }
+
+      function parseGoogelForm(callback) {
+        //url: google form url
+        //return: google form structure json
+
+        var fields = $($.parseHTML(formHTML)).find("form input[name^='entry']"); //input name start with entry
+        var fm = [];
+        fields.each(function( i, d ) {
+          fm.push(d.name);
+        });
+        config.googleForm.fields = fm;
+        callback(null);
+      }
+
+      function setFiledOptions() {
+        var options = config.googleForm.fields.map(function(f) {
+          return "<option value=" + f + ">" + f + "</option>";
+        });
+        options.forEach(function(o){
+          $(".formSel").append(o);
+        });
+      }
+    };
+
+  </script>
+</html>
